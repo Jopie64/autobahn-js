@@ -11,58 +11,48 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-var nacl = require('tweetnacl');
-var util = require('../util.js');
-var log = require('../log.js');
-var connection = require('../connection.js');
+import * as nacl from 'tweetnacl';
+import * as util from '../util';
+import * as log from '../log';
+import * as connection from '../connection';
 
 
-function load_private_key (name, force_regenerate) {
+export function load_private_key (name: string, force_regenerate: boolean): nacl.SignKeyPair {
     var seed = util.atob(localStorage.getItem(name));
     if (!seed || force_regenerate) {
         seed = nacl.randomBytes(nacl.sign.seedLength);
         localStorage.setItem(name, util.btoa(seed));
-        log.debug('new key seed "' + name + '" saved to local storage!');
+        log.debug(`new key seed ${name} saved to local storage!`);
     } else {
         log.debug('key seed "' + name + '" loaded from local storage!');
     }
     return nacl.sign.keyPair.fromSeed(seed);
 }
 
-exports.load_private_key = load_private_key;
 
-
-function delete_private_key (name) {
+export function delete_private_key (name: string) {
     // FIXME: poor man's secure erase
-    for (var i = 0; i < 5; ++i) {
-        seed = nacl.randomBytes(nacl.sign.seedLength);
+    for (let i = 0; i < 5; ++i) {
+        const seed = nacl.randomBytes(nacl.sign.seedLength);
         localStorage.setItem(name, util.btoa(seed));
         localStorage.setItem(name, '');
-        localStorage.setItem(name, null);
+        localStorage.removeItem(name);
     }
 }
 
-exports.delete_private_key = delete_private_key;
-
-
-function sign_challenge (pkey, extra) {
+export function sign_challenge (pkey: nacl.SignKeyPair, extra: any) {
    var challenge = util.htob(extra.challenge);
    var signature = nacl.sign.detached(challenge, pkey.secretKey);
    var res = util.btoh(signature) + util.btoh(challenge);
    return res;
 }
 
-exports.sign_challenge = sign_challenge;
 
-
-function public_key (pkey) {
+export function public_key (pkey: nacl.SignKeyPair) {
     return util.btoh(pkey.publicKey);
 }
 
-exports.public_key = public_key;
-
-
-function create_connection (config) {
+export function create_connection (config) {
 
     var url = config.url;
     var realm = config.realm;
@@ -82,7 +72,7 @@ function create_connection (config) {
         console.log(serializers);
     }
 
-    function onchallenge (session, method, extra) {
+    function onchallenge (session, method: string, extra) {
         // we only know how to process WAMP-cryptosign here!
         if (method == "cryptosign") {
             // and to do so, we let above helper sign the
@@ -154,5 +144,3 @@ function create_connection (config) {
 
     return _connection;
 }
-
-exports.create_connection = create_connection;

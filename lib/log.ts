@@ -11,16 +11,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+declare module 'log' {
 
-var debug = function () {};
+let debug = (...args: any[]) => {};
 
-if ('AUTOBAHN_DEBUG' in global && AUTOBAHN_DEBUG && 'console' in global) {
-   debug = function () {
-      console.log.apply(console, arguments);
-   }
+if (typeof AUTOBAHN_DEBUG !== 'undefined' && AUTOBAHN_DEBUG && typeof console !== 'undefined') {
+   debug = (...args: any[]) => console.log(...args);
 }
 
-var warn = console.warn;
+export debug;
 
-exports.debug = debug;
-exports.warn = warn;
+}
