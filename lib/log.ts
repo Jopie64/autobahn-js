@@ -19,6 +19,6 @@ if (typeof AUTOBAHN_DEBUG !== 'undefined' && AUTOBAHN_DEBUG && typeof console !=
    debug = (...args: any[]) => console.log(...args);
 }
 
-export debug;
+export { debug };
 
 }
